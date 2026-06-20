@@ -1,0 +1,35 @@
+stages:
+  - stage: Terraform
+    displayName: Terraform
+    jobs:
+      - job: Terraform
+        displayName: Run Terraform stage
+        pool:
+          vmImage: ubuntu-latest
+        steps:
+          - script: echo "Terraform stage template will be added here."
+            displayName: Terraform placeholder
+
+  - stage: Kubernetes
+    displayName: Kubernetes
+    dependsOn: Terraform
+    jobs:
+      - job: Kubernetes
+        displayName: Run Kubernetes stage
+        pool:
+          vmImage: ubuntu-latest
+        steps:
+          - script: echo "Kubernetes stage template will be added here."
+            displayName: Kubernetes placeholder
+
+# Later, when these stage templates exist, replace the placeholder stages above
+# with template references like this:
+#
+# stages:
+#   - template: ../../terraform/pipelines/stage.yml
+#     parameters:
+#       environmentName: dev
+#
+#   - template: ../../kubernetes/pipelines/stage.yml
+#     parameters:
+#       environmentName: dev
