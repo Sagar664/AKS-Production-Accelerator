@@ -1,0 +1,57 @@
+﻿trigger: none
+pr: none
+
+# Azure DevOps pipeline for deployment-only of Gatekeeper to AKS.
+# Run this pipeline manually or from a release pipeline.
+
+parameters:
+  - name: azureServiceConnection
+    type: string
+    default: 'Azure-DevOps-Accelerator-Dev'
+  - name: aksResourceGroup
+    type: string
+    default: 'rg-dev-aks-accelerator'
+  - name: aksCluster
+    type: string
+    default: 'aks-dev-aks-accelerator'
+  - name: gatekeeperManifest
+    type: string
+    default: 'gatekeeper/deploy-gatekeeper.yml'
+  - name: gatekeeperNamespace
+    type: string
+    default: 'gatekeeper-system'
+  - name: deploymentTimeout
+    type: string
+    default: '5m'
+
+stages:
+  - stage: DeployGatekeeper
+    displayName: Deploy Gatekeeper
+    jobs:
+      - job: Deploy
+        displayName: Deploy Gatekeeper to AKS
+        pool:
+          vmImage: 'ubuntu-latest'
+        steps:
+          - checkout: self
+
+          - task: AzureCLI@2
+            displayName: 'Configure AKS credentials'
+            inputs:
+              azureSubscription: '${{ parameters.azureServiceConnection }}'
+              scriptType: bash
+              scriptLocation: inlineScript
+              inlineScript: |
+                az aks get-credentials --resource-group "${{ parameters.aksResourceGroup }}" --name "${{ parameters.aksCluster }}" --overwrite-existing
+                kubectl version --client
+
+          - task: AzureCLI@2
+            displayName: 'Deploy Gatekeeper manifest'
+            inputs:
+              azureSubscription: '${{ parameters.azureServiceConnection }}'
+              scriptType: bash
+              scriptLocation: inlineScript
+              inlineScript: |
+                kubectl apply -f "$(System.DefaultWorkingDirectory)/${{ parameters.gatekeeperManifest }}"
+                kubectl wait --for=condition=available deployment/gatekeeper-controller-manager -n "${{ parameters.gatekeeperNamespace }}" --timeout="${{ parameters.deploymentTimeout }}"
+                kubectl get pods -n "${{ parameters.gatekeeperNamespace }}"
