@@ -3,6 +3,7 @@ pr: none
 
 variables:
   - template: variables.yml
+  - group: 'Azure DevOps Accelerator - Dev'
 
 stages:
   - template: stages.yml
