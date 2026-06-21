@@ -17,3 +17,6 @@ variables:
 
  # AKS cluster for the dev environment
  aksCluster: 'aks-dev-aks-accelerator'
+
+ #KEDA for the dev environment
+ keda: 'keda-dev-aks-accelerator'
