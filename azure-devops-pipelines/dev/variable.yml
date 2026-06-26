@@ -1,0 +1,22 @@
+variables:
+ env: dev
+
+ #azure subscription for the dev environment
+ azureServiceConnection: 'Azure-DevOps-Accelerator-Dev'
+ resourceGroup: 'rg-dev-aks-accelerator'
+
+ #storage account for the dev environment
+ storageAccount: 'stdevaksaccelerator'
+ stateResourceGroup: 'rg-dev-aks-accelerator'
+ 
+ #Docker registry for the dev environment
+ dockerRegistry: 'stdevaksaccelerator.azurecr.io'
+
+ #key vault for the dev environment
+ keyVault: 'kv-dev-aks-accelerator'
+
+ # AKS cluster for the dev environment
+ aksCluster: 'aks-dev-aks-accelerator'
+
+ #KEDA for the dev environment
+ keda: 'keda-dev-aks-accelerator'

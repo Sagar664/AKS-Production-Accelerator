@@ -1,0 +1,39 @@
+stages:
+- stage: DeployKeda
+  pool:
+    vmImage: 'ubuntu-latest'
+  jobs:
+    - job: Deploy
+      displayName: Deploy KEDA to AKS
+      steps:
+        - checkout: self
+        - task: replaceTokens@5
+          displayName: 'Replace tokens in KEDA manifest'
+          inputs:
+            targetFiles: 'keda/keda-deployment.yml'
+            encoding: 'auto'
+            writeBOM: true
+            actionOnMissing: 'warn'
+            keepToken: false
+            tokenPrefix: '#{'
+            tokenSuffix: '}#'
+        - task: AzureCLI@2
+          displayName: 'Configure AKS credentials'
+          inputs:
+            azureSubscription: '${{ parameters.azureServiceConnection }}'
+            scriptType: bash
+            scriptLocation: inlineScript
+            inlineScript: |
+              az aks get-credentials --resource-group "${{ parameters.aksResourceGroup }}" --name "${{ parameters.aksCluster }}" --overwrite-existing
+              kubectl version --client
+
+        - task: AzureCLI@2
+          displayName: 'Deploy KEDA manifest'
+          inputs:
+            azureSubscription: '${{ parameters.azureServiceConnection }}'
+            scriptType: bash
+            scriptLocation: inlineScript
+            inlineScript: |
+              kubectl apply -f "$(System.DefaultWorkingDirectory)/${{ parameters.kedaManifest }}"
+              kubectl wait --for=condition=available deployment/keda-operator -n "${{ parameters.kedaNamespace }}" --timeout="${{ parameters.deploymentTimeout }}"
+              kubectl get pods -n "${{ parameters.kedaNamespace }}"
